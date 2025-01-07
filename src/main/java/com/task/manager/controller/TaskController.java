@@ -1,6 +1,5 @@
 package com.task.manager.controller;
 
-import com.task.manager.model.Status;
 import com.task.manager.model.Task;
 import com.task.manager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
