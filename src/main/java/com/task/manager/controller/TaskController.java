@@ -1,5 +1,6 @@
 package com.task.manager.controller;
 
+import com.task.manager.model.Status;
 import com.task.manager.model.Task;
 import com.task.manager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,11 @@ public class TaskController {
         return taskService.updateTask(task);
     }
 
+    @DeleteMapping("/delete")
+    public void deleteTask(@RequestBody Task task) {
+        taskService.deleteTask(task.getId());
+    }
+
   /*  @PostMapping
     public String assignTask(@RequestBody Task task) {
 
@@ -36,11 +42,10 @@ public class TaskController {
         return taskService.getAllTasks();
     }
 
-   /* @GetMapping
-    public List<Task> getTasks(@RequestParam Status status) {
-
-
-    }*/
+    @GetMapping("/filter")
+    public List<Task> filterTaskByStatus(@RequestParam String status) {
+        return taskService.getTaskByStatus(Status.valueOf(status.toUpperCase()));
+    }
 
 
 }

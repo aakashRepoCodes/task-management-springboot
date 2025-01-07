@@ -13,6 +13,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -33,7 +34,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authrorizer ->
                         authrorizer.requestMatchers(publicUrl).permitAll()
                                 .anyRequest().authenticated()
-                ).httpBasic(Customizer.withDefaults())
+                )
+                .httpBasic(Customizer.withDefaults())
+               /* .sessionManagement(
+                        sessionManagementConfigurer ->
+                                sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) )
+              */  //.sessionManagement(Customizer.withDefaults())
                 .build();
     }
 
