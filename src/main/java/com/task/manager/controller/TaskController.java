@@ -32,9 +32,9 @@ public class TaskController {
         taskService.deleteTask(task.getId());
     }
 
-  /*  @PostMapping
+  /*  @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
     public String assignTask(@RequestBody Task task) {
-
 
     }*/
 

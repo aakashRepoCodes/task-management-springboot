@@ -3,8 +3,11 @@ package com.task.manager.service;
 import com.task.manager.model.Status;
 import com.task.manager.model.Task;
 import com.task.manager.model.User;
+import com.task.manager.model.auth.UserPrincipal;
 import com.task.manager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,7 +20,8 @@ public class TaskService {
     private TaskRepository taskRepository;
 
     public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+        Long userId = getCurrentUser().getId();
+        return taskRepository.findAllByUserId(userId);
     }
 
     public Task getTaskById(Long id) {
@@ -31,6 +35,7 @@ public class TaskService {
     }
 
     public Task saveTask(Task task) {
+        task.setUser(getCurrentUser());
         return taskRepository.save(task);
     }
 
@@ -58,4 +63,14 @@ public class TaskService {
        }
     }
 
+
+    private UserPrincipal getPrincipalUser() {
+        UserPrincipal user = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user;
+    }
+
+    private User getCurrentUser() {
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.getUser();
+    }
 }
