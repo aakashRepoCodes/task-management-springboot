@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class TaskManagerUserDetailService  implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public TaskManagerUserDetailService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

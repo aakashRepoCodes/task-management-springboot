@@ -4,6 +4,7 @@ import com.task.manager.model.Status;
 import com.task.manager.model.Task;
 import com.task.manager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public class TaskController {
         return taskService.getAllTasks();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter")
     public List<Task> filterTaskByStatus(@RequestParam String status) {
         return taskService.getTaskByStatus(Status.valueOf(status.toUpperCase()));
