@@ -6,7 +6,6 @@ import com.task.manager.model.User;
 import com.task.manager.model.auth.UserPrincipal;
 import com.task.manager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +19,12 @@ public class TaskService {
     private TaskRepository taskRepository;
 
     public List<Task> getAllTasks() {
-        Long userId = getCurrentUser().getId();
-        return taskRepository.findAllByUserId(userId);
+        if (getCurrentUser().getRole().getRole().contains("ADMIN")) {
+            return taskRepository.findAll();
+        } else {
+            Long userId = getCurrentUser().getId();
+            return taskRepository.findAllByUserId(userId);
+        }
     }
 
     public Task getTaskById(Long id) {

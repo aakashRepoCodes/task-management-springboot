@@ -31,7 +31,7 @@ public class UserService {
     }
 
     public String registerUser(User user) {
-        Role role = Optional.of(roleRepository.findByRole("ROLE_USER")).orElseThrow( () ->
+        Role role = roleRepository.findByRole("ROLE_USER").orElseThrow(() ->
                 new RuntimeException("Role Not Found"));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(role);
@@ -41,7 +41,7 @@ public class UserService {
 
     public String login(User user) {
 
-       Authentication authentication =  authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         user.getUsername(),
                         user.getPassword())
@@ -53,4 +53,15 @@ public class UserService {
         }
     }
 
+    public String assignAdminRole(User user) {
+        User existingUser = userRepository.findByEmail(user.getEmail()).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+        Role adminRole = roleRepository.findByRole("ROLE_ADMIN").orElseThrow(
+                () -> new RuntimeException("Role not found")
+        );
+        existingUser.setRole(adminRole);
+        userRepository.save(existingUser);
+        return existingUser.getUsername() + "User assigned as admin";
+    }
 }
