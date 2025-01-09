@@ -12,6 +12,7 @@ services:
       MYSQL_PASSWORD: taskpassword        # Password for the user
     volumes:
       - ./docker/mysql/data:/var/lib/mysql
+      - ./logs:/logs
 
   adminer:
     image: adminer

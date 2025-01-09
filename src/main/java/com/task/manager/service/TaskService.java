@@ -8,6 +8,7 @@ import com.task.manager.model.auth.UserPrincipal;
 import com.task.manager.repository.TaskRepository;
 import com.task.manager.repository.UserRepository;
 import jakarta.mail.MessagingException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class TaskService {
 
     @Autowired
@@ -49,7 +51,10 @@ public class TaskService {
 
     public Task saveTask(Task task) {
         task.setUser(getCurrentUser());
-        return taskRepository.save(task);
+        Task newTask =  taskRepository.save(task);
+        log.info("New Task {} created {}", newTask.getId(), newTask.getTitle());
+        return newTask;
+
     }
 
     public void deleteTask(Long id) {
@@ -58,6 +63,7 @@ public class TaskService {
         );
         if (task != null) {
             taskRepository.delete(task);
+            log.info("Task Deleted {}, title {}", task.getId(), task.getTitle());
         }
     }
 
@@ -70,6 +76,7 @@ public class TaskService {
            newTask.setDueDate(task.getDueDate());
            newTask.setPriority(task.getPriority());
            newTask.setStatus(task.getStatus());
+           log.info("Task Updated {}, title {}", task.getId(), task.getTitle());
            return taskRepository.save(newTask);
        } else {
            throw new RuntimeException("Task not found");
@@ -84,15 +91,20 @@ public class TaskService {
         User user = userRepository.findByUsername(assignmentRequest.getUsername()).orElseThrow(
                 () -> new RuntimeException("User not found")
         );
+        if (existingTask.getUser().getUsername() != null && existingTask.getUser().getUsername().isEmpty()) {
 
-        taskRepository.save(existingTask);
-        if (existingTask.getUser().getUsername().equals(assignmentRequest.getUsername())) {
-            // task is already assigned to same user
-            return "Task was already assigned to user : " + user.getUsername() +
-                    " previously.";
+            if (existingTask.getUser().getUsername().equals(assignmentRequest.getUsername())) {
+                // task is already assigned to same user
+                log.info("Task {} was already assigned to user {}", existingTask.getId(), user.getUsername());
+                return "Task was already assigned to user : " + user.getUsername() +
+                        "previously.";
+            }
         } else {
            // update the task assignment
             existingTask.setUser(user);
+            taskRepository.save(existingTask);
+            log.info("User {} is notified with email {} about task {} ", user.getUsername()
+                    , user.getEmail(), existingTask.getId());
             emailService.sendTaskAssignedEmail(user.getEmail(), existingTask);
         }
         return "Task is now assigned to user : " + user.getUsername();
