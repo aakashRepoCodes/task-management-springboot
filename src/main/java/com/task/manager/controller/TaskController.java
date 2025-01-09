@@ -4,6 +4,7 @@ import com.task.manager.model.Status;
 import com.task.manager.model.Task;
 import com.task.manager.model.TaskAssignmentRequest;
 import com.task.manager.service.TaskService;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,12 @@ public class TaskController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/assign-task")
     public String assignTask(@RequestBody TaskAssignmentRequest assignmentRequest) {
-        return taskService.assignTaskToUser(assignmentRequest);
+        try {
+            return taskService.assignTaskToUser(assignmentRequest);
+        } catch (MessagingException e) {
+            //throw new RuntimeException(e);
+            return "An error occurred while assigning task";
+        }
 
     }
 

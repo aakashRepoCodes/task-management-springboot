@@ -7,6 +7,7 @@ import com.task.manager.model.User;
 import com.task.manager.model.auth.UserPrincipal;
 import com.task.manager.repository.TaskRepository;
 import com.task.manager.repository.UserRepository;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class TaskService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public List<Task> getAllTasks() {
         if (getCurrentUser().getRole().getRole().contains("ADMIN")) {
@@ -72,7 +76,7 @@ public class TaskService {
        }
     }
 
-    public String assignTaskToUser(TaskAssignmentRequest assignmentRequest) {
+    public String assignTaskToUser(TaskAssignmentRequest assignmentRequest) throws MessagingException {
         Task existingTask = taskRepository.findById(assignmentRequest.getTaskId()).orElseThrow(
                 () -> new RuntimeException("Task not found")
         );
@@ -80,8 +84,17 @@ public class TaskService {
         User user = userRepository.findByUsername(assignmentRequest.getUsername()).orElseThrow(
                 () -> new RuntimeException("User not found")
         );
-        existingTask.setUser(user);
+
         taskRepository.save(existingTask);
+        if (existingTask.getUser().getUsername().equals(assignmentRequest.getUsername())) {
+            // task is already assigned to same user
+            return "Task was already assigned to user : " + user.getUsername() +
+                    " previously.";
+        } else {
+           // update the task assignment
+            existingTask.setUser(user);
+            emailService.sendTaskAssignedEmail(user.getEmail(), existingTask);
+        }
         return "Task is now assigned to user : " + user.getUsername();
     }
 
