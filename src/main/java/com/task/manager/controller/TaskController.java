@@ -2,6 +2,7 @@ package com.task.manager.controller;
 
 import com.task.manager.model.Status;
 import com.task.manager.model.Task;
+import com.task.manager.model.TaskAssignmentRequest;
 import com.task.manager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,11 +33,12 @@ public class TaskController {
         taskService.deleteTask(task.getId());
     }
 
-  /*  @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    public String assignTask(@RequestBody Task task) {
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/assign-task")
+    public String assignTask(@RequestBody TaskAssignmentRequest assignmentRequest) {
+        return taskService.assignTaskToUser(assignmentRequest);
 
-    }*/
+    }
 
     @GetMapping
     public List<Task> getTasks() {
@@ -49,5 +51,16 @@ public class TaskController {
         return taskService.getTaskByStatus(Status.valueOf(status.toUpperCase()));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/user-tasks")
+    public List<Task> getAllAssignedTaskForUser(@RequestParam String username) {
+        return taskService.getTaskForUser(username);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/unassigned-tasks")
+    public List<Task> getAllUnAssignedTasks() {
+        return taskService.getAllUnassignedTasks();
+    }
 
 }

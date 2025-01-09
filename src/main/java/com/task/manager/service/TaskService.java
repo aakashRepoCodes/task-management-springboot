@@ -2,9 +2,11 @@ package com.task.manager.service;
 
 import com.task.manager.model.Status;
 import com.task.manager.model.Task;
+import com.task.manager.model.TaskAssignmentRequest;
 import com.task.manager.model.User;
 import com.task.manager.model.auth.UserPrincipal;
 import com.task.manager.repository.TaskRepository;
+import com.task.manager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public List<Task> getAllTasks() {
         if (getCurrentUser().getRole().getRole().contains("ADMIN")) {
             return taskRepository.findAll();
@@ -27,10 +32,11 @@ public class TaskService {
         }
     }
 
-    public Task getTaskById(Long id) {
-        return Optional.of(taskRepository.findById(id).get()).orElseThrow(
-                () -> new RuntimeException("Task not found")
+    public List<Task> getTaskForUser(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new RuntimeException("User not found")
         );
+        return taskRepository.findAllByUserId(user.getId());
     }
 
     public List<Task> getTaskByStatus(Status status) {
@@ -66,6 +72,24 @@ public class TaskService {
        }
     }
 
+    public String assignTaskToUser(TaskAssignmentRequest assignmentRequest) {
+        Task existingTask = taskRepository.findById(assignmentRequest.getTaskId()).orElseThrow(
+                () -> new RuntimeException("Task not found")
+        );
+
+        User user = userRepository.findByUsername(assignmentRequest.getUsername()).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+        existingTask.setUser(user);
+        taskRepository.save(existingTask);
+        return "Task is now assigned to user : " + user.getUsername();
+    }
+
+    public List<Task> getAllUnassignedTasks() {
+        List<Task> tasks = taskRepository.findAllUnassignedTasks();
+        return tasks;
+    }
+
 
     private UserPrincipal getPrincipalUser() {
         UserPrincipal user = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -76,4 +100,5 @@ public class TaskService {
         UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return principal.getUser();
     }
+
 }
