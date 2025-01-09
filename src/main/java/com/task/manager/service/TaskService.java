@@ -1,5 +1,7 @@
 package com.task.manager.service;
 
+import com.task.manager.exception.TaskNotFoundException;
+import com.task.manager.exception.UserNotFoundException;
 import com.task.manager.model.Status;
 import com.task.manager.model.Task;
 import com.task.manager.model.TaskAssignmentRequest;
@@ -40,7 +42,7 @@ public class TaskService {
 
     public List<Task> getTaskForUser(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new RuntimeException("User not found")
+                () -> new UserNotFoundException("User not found")
         );
         return taskRepository.findAllByUserId(user.getId());
     }
@@ -59,7 +61,7 @@ public class TaskService {
 
     public void deleteTask(Long id) {
         Task task = taskRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Task not found")
+                () -> new TaskNotFoundException("Task not found")
         );
         if (task != null) {
             taskRepository.delete(task);
@@ -79,17 +81,17 @@ public class TaskService {
            log.info("Task Updated {}, title {}", task.getId(), task.getTitle());
            return taskRepository.save(newTask);
        } else {
-           throw new RuntimeException("Task not found");
+           throw new TaskNotFoundException("Task not found");
        }
     }
 
     public String assignTaskToUser(TaskAssignmentRequest assignmentRequest) throws MessagingException {
         Task existingTask = taskRepository.findById(assignmentRequest.getTaskId()).orElseThrow(
-                () -> new RuntimeException("Task not found")
+                () -> new TaskNotFoundException("Task not found")
         );
 
         User user = userRepository.findByUsername(assignmentRequest.getUsername()).orElseThrow(
-                () -> new RuntimeException("User not found")
+                () -> new UserNotFoundException("User not found")
         );
         if (existingTask.getUser().getUsername() != null && existingTask.getUser().getUsername().isEmpty()) {
 
