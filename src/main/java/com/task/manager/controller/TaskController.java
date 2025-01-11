@@ -6,6 +6,8 @@ import com.task.manager.model.TaskAssignmentRequest;
 import com.task.manager.service.TaskService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,54 +21,65 @@ public class TaskController {
     private TaskService taskService;
 
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.saveTask(task);
-
+    public ResponseEntity<Task> createTask(@RequestBody Task task) {
+        return new ResponseEntity<>(taskService.saveTask(task), HttpStatus.CREATED);
     }
 
     @PostMapping("/update")
-    public Task updateTask(@RequestBody Task task) {
-        return taskService.updateTask(task);
+    public ResponseEntity<Task> updateTask(@RequestBody Task task) {
+        return new ResponseEntity<>(taskService.updateTask(task), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/delete")
-    public void deleteTask(@RequestBody Task task) {
+    public ResponseEntity<Void> deleteTask(@RequestBody Task task) {
         taskService.deleteTask(task.getId());
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/assign-task")
-    public String assignTask(@RequestBody TaskAssignmentRequest assignmentRequest) {
+    public ResponseEntity<String> assignTask(@RequestBody TaskAssignmentRequest assignmentRequest) {
         try {
-            return taskService.assignTaskToUser(assignmentRequest);
+            return new ResponseEntity<>(taskService.assignTaskToUser(assignmentRequest), HttpStatus.OK);
         } catch (MessagingException e) {
             //throw new RuntimeException(e);
-            return "An error occurred while assigning task";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    e.getLocalizedMessage()
+            );
         }
 
     }
 
     @GetMapping
-    public List<Task> getTasks() {
-        return taskService.getAllTasks();
+    public ResponseEntity<List<Task>> getTasks() {
+        return new ResponseEntity<>(taskService.getAllTasks(), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter")
-    public List<Task> filterTaskByStatus(@RequestParam String status) {
-        return taskService.getTaskByStatus(Status.valueOf(status.toUpperCase()));
+    public ResponseEntity<List<Task>> filterTaskByStatus(@RequestParam String status) {
+        return new ResponseEntity<>(
+                taskService.getTaskByStatus(Status.valueOf(status.toUpperCase()))
+                , HttpStatus.OK
+        );
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user-tasks")
-    public List<Task> getAllAssignedTaskForUser(@RequestParam String username) {
-        return taskService.getTaskForUser(username);
+    public ResponseEntity<List<Task>> getAllAssignedTaskForUser(@RequestParam String username) {
+        return new ResponseEntity<>(
+                taskService.getTaskForUser(username)
+                ,HttpStatus.OK
+        );
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/unassigned-tasks")
-    public List<Task> getAllUnAssignedTasks() {
-        return taskService.getAllUnassignedTasks();
+    public  ResponseEntity<List<Task>> getAllUnAssignedTasks() {
+        return new ResponseEntity<>(
+                taskService.getAllUnassignedTasks(),
+                HttpStatus.OK
+        );
     }
 
 }

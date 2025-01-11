@@ -1,7 +1,10 @@
 package com.task.manager.controller;
 
 import com.task.manager.model.User;
+import com.task.manager.response.ApiResponse;
 import com.task.manager.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,13 +21,16 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
+    public ApiResponse<String> register(@RequestBody User user) {
         return userService.registerUser(user);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        return userService.login(user);
+    public ResponseEntity<String> login(@RequestBody User user) {
+        return new ResponseEntity<>(
+                userService.login(user),
+                HttpStatus.OK
+        );
     }
 
 }

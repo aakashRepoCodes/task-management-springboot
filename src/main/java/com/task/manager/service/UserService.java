@@ -4,6 +4,7 @@ import com.task.manager.model.User;
 import com.task.manager.model.auth.Role;
 import com.task.manager.repository.RoleRepository;
 import com.task.manager.repository.UserRepository;
+import com.task.manager.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,13 +32,16 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public String registerUser(User user) {
+    public ApiResponse<String> registerUser(User user) {
         Role role = roleRepository.findByRole("ROLE_USER").orElseThrow(() ->
                 new RuntimeException("Role Not Found"));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(role);
         userRepository.save(user);
-        return "Register successful";
+        ApiResponse<String> response = new ApiResponse<String>(
+             "success", "ok", "Registered Successfully"
+        );
+        return response;
     }
 
     public String login(User user) {
@@ -48,9 +52,12 @@ public class UserService {
                         user.getPassword())
         );
         if (authentication.isAuthenticated()) {
+            ApiResponse<String> response = new ApiResponse<String>(
+                    "success", "Logged IN Success", null
+            );
             return "Login successful";
         } else {
-            return "Login failed";
+            throw new RuntimeException("Incorrect username or password");
         }
     }
 
