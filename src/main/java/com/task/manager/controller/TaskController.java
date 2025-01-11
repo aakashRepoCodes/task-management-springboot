@@ -6,11 +6,12 @@ import com.task.manager.model.TaskAssignmentRequest;
 import com.task.manager.service.TaskService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -30,9 +31,9 @@ public class TaskController {
         return new ResponseEntity<>(taskService.updateTask(task), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<Void> deleteTask(@RequestBody Task task) {
-        taskService.deleteTask(task.getId());
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -42,9 +43,14 @@ public class TaskController {
         return new ResponseEntity<>(taskService.assignTaskToUser(assignmentRequest), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<Task>> getTasks() {
-        return new ResponseEntity<>(taskService.getAllTasks(), HttpStatus.OK);
+    public ResponseEntity<Page<Task>> getTasks(
+            @RequestParam  (defaultValue = "0")int page,
+            @RequestParam (defaultValue = "30") int size) {
+        return new ResponseEntity<>(taskService.getAllTasks(
+                PageRequest.of(page, size)
+        ), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

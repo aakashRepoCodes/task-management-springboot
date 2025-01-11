@@ -12,6 +12,8 @@ import com.task.manager.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -31,14 +33,19 @@ public class TaskService {
     @Autowired
     private EmailService emailService;
 
-    public List<Task> getAllTasks() {
+  /*  public List<Task> getAllTasks(Pageable pageable) {
         if (getCurrentUser().getRole().getRole().contains("ADMIN")) {
             return taskRepository.findAll();
         } else {
             Long userId = getCurrentUser().getId();
             return taskRepository.findAllByUserId(userId);
         }
+    }*/
+
+    public Page<Task> getAllTasks(Pageable pageable) {
+        return taskRepository.findAll(pageable);
     }
+
 
     public List<Task> getTaskForUser(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(

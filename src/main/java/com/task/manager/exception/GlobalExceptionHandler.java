@@ -29,8 +29,8 @@ public class GlobalExceptionHandler {
         } else return new ResponseEntity<>("Something Went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<String> handleGenericException(MessagingException e) {
+    @ExceptionHandler(value = MessagingException.class)
+    public ResponseEntity<String> handleMessagingException(MessagingException e) {
         log.info("Failed to notify user with email");
         return new ResponseEntity<>("Task was assigned to the user", HttpStatus.OK);
 
