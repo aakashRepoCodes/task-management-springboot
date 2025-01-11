@@ -1,15 +1,15 @@
 package com.task.manager.exception;
 
-import org.eclipse.angus.mail.iap.BadCommandException;
-import org.springframework.context.annotation.Configuration;
+import jakarta.mail.MessagingException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.HttpClientErrorException;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = TaskNotFoundException.class)
@@ -27,6 +27,13 @@ public class GlobalExceptionHandler {
         if (e instanceof BadCredentialsException) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         } else return new ResponseEntity<>("Something Went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<String> handleGenericException(MessagingException e) {
+        log.info("Failed to notify user with email");
+        return new ResponseEntity<>("Task was assigned to the user", HttpStatus.OK);
+
     }
 
 }

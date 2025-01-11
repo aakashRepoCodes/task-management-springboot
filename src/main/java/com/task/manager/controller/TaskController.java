@@ -25,7 +25,7 @@ public class TaskController {
         return new ResponseEntity<>(taskService.saveTask(task), HttpStatus.CREATED);
     }
 
-    @PostMapping("/update")
+    @PatchMapping
     public ResponseEntity<Task> updateTask(@RequestBody Task task) {
         return new ResponseEntity<>(taskService.updateTask(task), HttpStatus.CREATED);
     }
@@ -38,16 +38,8 @@ public class TaskController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/assign-task")
-    public ResponseEntity<String> assignTask(@RequestBody TaskAssignmentRequest assignmentRequest) {
-        try {
-            return new ResponseEntity<>(taskService.assignTaskToUser(assignmentRequest), HttpStatus.OK);
-        } catch (MessagingException e) {
-            //throw new RuntimeException(e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    e.getLocalizedMessage()
-            );
-        }
-
+    public ResponseEntity<String> assignTask(@RequestBody TaskAssignmentRequest assignmentRequest) throws MessagingException {
+        return new ResponseEntity<>(taskService.assignTaskToUser(assignmentRequest), HttpStatus.OK);
     }
 
     @GetMapping
