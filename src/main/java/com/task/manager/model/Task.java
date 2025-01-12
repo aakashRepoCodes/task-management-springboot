@@ -22,7 +22,7 @@ public class Task {
      Priority priority ;
      Status status;
 
-     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+     @ManyToOne(fetch = FetchType.EAGER)
      @JsonIgnore
      User user;
 }

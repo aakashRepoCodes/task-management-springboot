@@ -62,7 +62,7 @@ public class TaskController {
         );
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/user-tasks")
     public ResponseEntity<List<Task>> getAllAssignedTaskForUser(@RequestParam String username) {
         return new ResponseEntity<>(

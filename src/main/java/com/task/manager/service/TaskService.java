@@ -1,11 +1,9 @@
 package com.task.manager.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.task.manager.exception.TaskNotFoundException;
 import com.task.manager.exception.UserNotFoundException;
-import com.task.manager.model.Status;
-import com.task.manager.model.Task;
-import com.task.manager.model.TaskAssignmentRequest;
-import com.task.manager.model.User;
+import com.task.manager.model.*;
 import com.task.manager.model.auth.UserPrincipal;
 import com.task.manager.repository.TaskRepository;
 import com.task.manager.repository.UserRepository;
@@ -17,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,14 +32,9 @@ public class TaskService {
     @Autowired
     private EmailService emailService;
 
-  /*  public List<Task> getAllTasks(Pageable pageable) {
-        if (getCurrentUser().getRole().getRole().contains("ADMIN")) {
-            return taskRepository.findAll();
-        } else {
-            Long userId = getCurrentUser().getId();
-            return taskRepository.findAllByUserId(userId);
-        }
-    }*/
+    @Autowired
+    private RedisService redisService;
+
 
     public Page<Task> getAllTasks(Pageable pageable) {
         return taskRepository.findAll(pageable);
@@ -51,16 +45,26 @@ public class TaskService {
         User user = userRepository.findByUsername(username).orElseThrow(
                 () -> new UserNotFoundException("User not found")
         );
-        return taskRepository.findAllByUserId(user.getId());
+
+        Optional<List<Task>> cachedTasks = Optional.ofNullable(redisService.get("my_tasks", new TypeReference<>() {
+        }));
+        if (cachedTasks.isPresent()) {
+            return cachedTasks.get();
+        } else {
+            List<Task> tasks = taskRepository.findAllByUserId(user.getId());
+            redisService.set("my_tasks", tasks, 1L);
+            return tasks;
+
+        }
     }
 
     public List<Task> getTaskByStatus(Status status) {
-       return taskRepository.findAllByStatus(status);
+        return taskRepository.findAllByStatus(status);
     }
 
     public Task saveTask(Task task) {
         task.setUser(getCurrentUser());
-        Task newTask =  taskRepository.save(task);
+        Task newTask = taskRepository.save(task);
         log.info("New Task {} created {}", newTask.getId(), newTask.getTitle());
         return newTask;
 
@@ -77,19 +81,19 @@ public class TaskService {
     }
 
     public Task updateTask(Task task) {
-       Optional<Task> existingTask  =  taskRepository.findById(task.getId());
-       if(existingTask.isPresent()) {
-           Task newTask = existingTask.get();
-           newTask.setDescription(task.getDescription());
-           newTask.setTitle(task.getTitle());
-           newTask.setDueDate(task.getDueDate());
-           newTask.setPriority(task.getPriority());
-           newTask.setStatus(task.getStatus());
-           log.info("Task Updated {}, title {}", task.getId(), task.getTitle());
-           return taskRepository.save(newTask);
-       } else {
-           throw new TaskNotFoundException("Task not found");
-       }
+        Optional<Task> existingTask = taskRepository.findById(task.getId());
+        if (existingTask.isPresent()) {
+            Task newTask = existingTask.get();
+            newTask.setDescription(task.getDescription());
+            newTask.setTitle(task.getTitle());
+            newTask.setDueDate(task.getDueDate());
+            newTask.setPriority(task.getPriority());
+            newTask.setStatus(task.getStatus());
+            log.info("Task Updated {}, title {}", task.getId(), task.getTitle());
+            return taskRepository.save(newTask);
+        } else {
+            throw new TaskNotFoundException("Task not found");
+        }
     }
 
     public String assignTaskToUser(TaskAssignmentRequest assignmentRequest) throws MessagingException {
@@ -109,7 +113,7 @@ public class TaskService {
                         "previously.";
             }
         } else {
-           // update the task assignment
+            // update the task assignment
             existingTask.setUser(user);
             taskRepository.save(existingTask);
             log.info("User {} is notified with email {} about task {} ", user.getUsername()

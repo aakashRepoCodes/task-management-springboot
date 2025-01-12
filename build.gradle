@@ -37,6 +37,10 @@ dependencies {
     //email
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    //caching
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
