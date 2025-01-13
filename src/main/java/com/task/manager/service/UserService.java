@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 
 @Service
 @Slf4j
@@ -35,6 +37,12 @@ public class UserService {
     public ApiResponse<String> registerUser(User user) {
         Role role = roleRepository.findByRole("ROLE_USER").orElseThrow(() ->
                 new RuntimeException("Role Not Found"));
+
+        Optional<User> existsUser = userRepository.existsUserByEmail(user.getEmail());
+        if (existsUser.isPresent()) {
+            throw new RuntimeException("User already exists");
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(role);
         userRepository.save(user);

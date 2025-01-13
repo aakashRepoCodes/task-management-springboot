@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,15 +16,18 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-     Long id;
+    Long id;
 
-     String title;
-     String description;
-     String dueDate;
-     Priority priority ;
-     Status status;
+    String title;
+    String description;
 
-     @ManyToOne(fetch = FetchType.EAGER)
-     @JsonIgnore
-     User user;
+    @Column(name = "due_date")
+    private LocalDateTime dueDate;
+
+    Priority priority;
+    Status status;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
+    User user;
 }
