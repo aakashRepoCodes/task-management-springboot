@@ -41,8 +41,8 @@ public class UserService {
         Role role = roleRepository.findByRole("ROLE_USER").orElseThrow(() ->
                 new RuntimeException("Role Not Found"));
 
-        Optional<User> existsUser = userRepository.existsUserByEmail(user.getEmail());
-        if (existsUser.isPresent()) {
+        boolean userExists = userRepository.existsUserByEmail(user.getEmail());
+        if (userExists) {
             throw new RuntimeException("User already exists");
         }
 

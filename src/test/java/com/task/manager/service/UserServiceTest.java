@@ -42,7 +42,7 @@ public class UserServiceTest {
         Role role = new Role(1L, "USER");
 
         Mockito.when(roleRepository.findByRole("ROLE_USER")).thenReturn(Optional.of(role));
-        Mockito.when(userRepository.existsUserByEmail(user.getEmail())).thenReturn(Optional.empty());
+        Mockito.when(userRepository.existsUserByEmail(user.getEmail())).thenReturn(false);
         Mockito.when(passwordEncoder.encode(user.getPassword())).thenReturn("encodedPassword");
 
         ApiResponse<String> response = userService.registerUser(user);
@@ -63,7 +63,7 @@ public class UserServiceTest {
 
         Mockito.when(roleRepository.findByRole("ROLE_USER")).thenReturn(Optional.of(role));
 
-        Mockito.when(userRepository.existsUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.existsUserByEmail(user.getEmail())).thenReturn(true);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
              userService.registerUser(user);
